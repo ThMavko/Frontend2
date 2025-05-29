@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/style.css">
+    <title>Frontend Page</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #0f172a;
+      }
+
+      #stockCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #ticker {
+        position: absolute;
+        top: 60px; 
+        left: 0;
+        white-space: nowrap;
+        font-family: monospace;
+        font-size: 20px;
+        color: #38bdf8;
+        pointer-events: none;
+      }
+    </style>
+</head>
+<body>
+    <header>
+        <div id="container"></div>
+        <h1>Frontend Page</h1>
+        <nav>
+            <button id="button1" class="neon-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="neon-icon" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                </svg>
+                PAGE 1
+            </button>
+            <button id="button2" class="neon-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="neon-icon" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                </svg>
+                PAGE 2
+            </button>
+        </nav>
+    </header>
+    <div id="ticker"></div>
+    <canvas id="stockCanvas"></canvas>
+    <main>
+        <p>Benvenuto</p>
+    </main>
+    <script src="main.js"></script>
+    <script src="oscillatingdots.js"></script>
+    <script>
+      const canvas = document.getElementById('stockCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let lines = createLines();
+
+      function createLines() {
+        return Array.from({ length: 6 }, (_, i) => ({
+          points: Array.from({ length: canvas.width }, (_, x) => ({
+            x,
+            y: Math.sin(x * 0.01 + i) * 20 + canvas.height / 2 + i * 20
+          })),
+          speed: 0.5 + Math.random() * 1,
+          color: `hsl(${180 + i * 20}, 80%, 60%)`
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        lines.forEach(line => {
+          ctx.beginPath();
+          ctx.strokeStyle = line.color;
+          ctx.lineWidth = 1.5;
+          line.points.forEach((p, i) => {
+            p.y = Math.sin(p.x * 0.02 + performance.now() / 500 + line.speed * 10) * 25 + canvas.height / 2;
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          });
+          ctx.stroke();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        lines = createLines();
+      });
+    </script>
+    <script>
+      const tickerDiv = document.getElementById('ticker');
+      let tickerX = window.innerWidth;
+      const tickerTexts = [
+        "AAPL ↑", "TSLA ↓", "GOOGL ↑", "AMZN ↑", "META ↓", "NFLX ↑", "MSFT ↓", "NVDA ↑", "AMD ↓", "INTC ↑", 
+        "BABA ↓", "V ↑", "PYPL ↑", "SQ ↓", "CRM ↑", "ORCL ↓", "ADBE ↑", "CSCO ↓", "INTU ↑", "ZM ↓", "UBER ↑", "LYFT ↓", "SNAP ↑", "TWTR ↓"
+      ];
+      let tickerContent = '';
+      function updateTickerContent() {
+        tickerContent = '';
+        tickerTexts.forEach((text, i) => {
+          tickerContent += `<span style="margin-right:50px;">${text}</span>`;
+        });
+        tickerDiv.innerHTML = tickerContent;
+      }
+      updateTickerContent();
+      let tickerOffset = 0;
+      function animateTicker() {
+        tickerOffset -= 2;
+        tickerDiv.style.transform = `translateX(${tickerOffset}px)`;
+        if (tickerDiv.getBoundingClientRect().right < 0) {
+          tickerOffset = window.innerWidth;
+        }
+        requestAnimationFrame(animateTicker);
+      }
+      animateTicker();
+      window.addEventListener('resize', () => {
+        tickerOffset = 0;
+        tickerDiv.style.transform = 'translateX(0)';
+      });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        setupOscillatingDots && setupOscillatingDots();
+        const header = document.querySelector('header');
+        const container = document.getElementById('container');
+        function resizeBgCanvas() {
+            const bgCanvas = container && container.querySelector('canvas');
+            if (bgCanvas && header) {
+                bgCanvas.width = header.offsetWidth;
+                bgCanvas.height = header.offsetHeight;
+            }
+        }
+        resizeBgCanvas();
+        window.addEventListener('resize', resizeBgCanvas);
+        const tickerDiv = document.getElementById('ticker');
+        function positionTicker() {
+            if (header && tickerDiv) {
+                tickerDiv.style.top = header.offsetHeight + 'px';
+            }
+        }
+        positionTicker();
+        window.addEventListener('resize', positionTicker);
+      });
+    </script>
+    <script src="backgroundhead.js"></script>
+</body>
+</html>
